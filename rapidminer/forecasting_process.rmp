@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><process version="9.10.001">
+  <context>
+    <input/>
+    <output/>
+    <macros/>
+  </context>
+  <operator activated="true" class="process" compatibility="9.10.001" expanded="true" name="Process">
+    <parameter key="logverbosity" value="init"/>
+    <parameter key="random_seed" value="2001"/>
+    <parameter key="send_mail" value="never"/>
+    <parameter key="notification_email" value=""/>
+    <parameter key="process_duration_for_mail" value="30"/>
+    <parameter key="encoding" value="SYSTEM"/>
+    <process expanded="true">
+
+      <!--
+        NOTE - READ BEFORE RUNNING:
+        This is a SKELETON, not a finished process. ARIMA and Holt-Winters
+        live in RapidMiner's "Time Series" extension, and that extension's
+        exact operator class names / parameter keys vary by version - I
+        cannot verify them without the application installed, so I have
+        NOT guessed at them here (a wrong guess would just fail to load
+        or silently do the wrong thing, which is worse than an honest gap).
+
+        What IS included below: Read CSV, correctly pointed at the
+        aggregated output from preprocessing_process.rmp, and a Sort
+        operator to guarantee chronological order (required before any
+        time-series operator).
+
+        What YOU need to add manually inside Altair AI Studio, following
+        rapidminer/HOW_TO_BUILD.md step by step:
+          1. Install the "Time Series" extension (Extensions > Marketplace)
+          2. Drag in the ARIMA operator (search "ARIMA" in the operator
+             tree after installing the extension) - set p=1, d=1, q=1
+          3. Drag in the Holt-Winters operator - set seasonal periods=7
+          4. Wrap both in "Forecast Validation" with a chronological
+             60-day holdout, containing "Performance (Regression)" to
+             get MAE/RMSE
+          5. Add "Apply Forecast" on the winning model for the final
+             30-day-ahead forecast
+          6. Add "Write CSV" pointed at ../outputs/forecast_results_rapidminer.csv
+
+        HOW_TO_BUILD.md has the exact parameter values and reasoning for
+        every one of these steps.
+      -->
+
+      <operator activated="true" class="read_csv" compatibility="9.10.001" expanded="true" height="68" name="Read CSV" width="90" x="45" y="34">
+        <parameter key="csv_file" value="../outputs/daily_demand_aggregated_rapidminer.csv"/>
+        <parameter key="column_separators" value=","/>
+        <parameter key="first_row_as_names" value="true"/>
+        <parameter key="date_format" value="yyyy-MM-dd"/>
+        <parameter key="encoding" value="UTF-8"/>
+      </operator>
+
+      <operator activated="true" class="sort" compatibility="9.10.001" expanded="true" height="82" name="Sort" width="90" x="179" y="34">
+        <parameter key="attribute_name" value="Date"/>
+        <parameter key="sorting_direction" value="increasing"/>
+      </operator>
+
+      <!--
+        <<< ADD HERE (per HOW_TO_BUILD.md, Process 2 table): >>>
+        Set Role -> ARIMA + Holt-Winters -> Forecast Validation
+        (with Performance Regression inside) -> Apply Forecast -> Write CSV
+      -->
+
+      <connect from_op="Read CSV" from_port="output" to_op="Sort" to_port="example set input"/>
+      <connect from_op="Sort" from_port="example set output" to_port="result 1"/>
+      <portSpacing port="source_input 1" spacing="0"/>
+      <portSpacing port="sink_result 1" spacing="0"/>
+      <portSpacing port="sink_result 2" spacing="0"/>
+
+    </process>
+  </operator>
+</process>

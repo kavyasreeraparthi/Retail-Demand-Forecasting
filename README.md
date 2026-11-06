@@ -1,0 +1,96 @@
+# Retail Demand Forecasting & Inventory Optimization using RapidMiner
+
+A Data Science Master Virtual Internship (Siemens / RapidMiner-Altair AI Studio) final case study. RapidMiner is the primary data preparation and forecasting environment; Python provides supporting verification analysis and a simple Tkinter GUI.
+
+## Problem Statement
+How can historical retail sales, inventory, pricing, promotion, seasonal, and external factors be analyzed to forecast future product demand and identify potential inventory gaps?
+
+## Dataset
+**Retail Store Inventory and Demand Forecasting** — https://www.kaggle.com/datasets/atomicd/retail-store-inventory-and-demand-forecasting
+76,000 rows · 5 stores × 20 products · daily, 2022-01-01 to 2024-01-30 · 0 missing values · 0 duplicates (verified, not assumed).
+Already included at `data/retail_demand.csv` in this project.
+
+## Project Structure
+```
+Retail_Demand_Forecasting/
+├── data/
+│   └── retail_demand.csv
+├── rapidminer/
+│   ├── preprocessing_process.rmp        # the one RapidMiner process used
+│   └── HOW_TO_BUILD.md                  # exact operator/parameter build guide
+├── python/
+│   ├── data_analysis.py         # preprocessing + features + EDA (verification)
+│   ├── forecasting_validation.py # ARIMA vs Holt-Winters (real numbers)
+│   ├── inventory_analysis.py    # inventory gap + recommendation
+│   └── gui.py                   # Tkinter GUI (reads results, doesn't train)
+├── outputs/                     # generated after you run the pipeline
+├── docs/
+│   ├── documentation.md         # full write-up + explainability pack
+│   └── viva_questions.md        # 20 Q&A
+├── requirements.txt
+└── README.md
+```
+
+## RapidMiner's Role in This Project (scoped deliberately)
+RapidMiner is used for **data preprocessing only**: Read CSV → Select
+Attributes → Replace Missing Values → Remove Duplicates → Generate
+Attributes → Aggregate → Sort → Write CSV (`rapidminer/preprocessing_process.rmp`).
+
+This was a deliberate scope decision. RapidMiner's Time Series extension
+(needed for ARIMA/Holt-Winters/Forecast Validation) caused persistent
+connection errors that weren't practical to resolve, so **forecasting,
+model evaluation, and inventory optimization are implemented and
+validated entirely in Python** instead, using the same models (ARIMA,
+Holt-Winters), the same chronological validation logic, and the same
+metrics (MAE/RMSE/MAPE) that would have been used in RapidMiner.
+
+Recommended one-line disclosure for your report: *"RapidMiner scope was
+limited to data preprocessing due to Time Series extension compatibility
+issues; forecasting was implemented and validated in Python using
+equivalent models and validation methodology."*
+
+I don't have RapidMiner/Altair AI Studio installed and can't execute it —
+it's desktop GUI software — so `preprocessing_process.rmp` is a
+best-effort template using RapidMiner's stable core operators. Open it
+and verify it loads without red error icons; `rapidminer/HOW_TO_BUILD.md`
+has the exact operator-by-operator instructions if you need to rebuild
+any part of it manually.
+
+## How to Run the Python Side (real, executable, verified numbers)
+
+### 1. Install Python
+Get Python 3.10+ from python.org if you don't have it. On Windows, check "Add python.exe to PATH" during install.
+
+### 2. Install dependencies
+```bash
+cd Retail_Demand_Forecasting
+pip install -r requirements.txt
+```
+(On some Linux distros, also run `sudo apt install python3-tk` for the GUI — Tkinter ships with Python by default on Windows/Mac.)
+
+### 3. Run the full pipeline
+```bash
+python run.py
+```
+This runs, in order: preprocessing + EDA → ARIMA/Holt-Winters forecasting + evaluation → inventory gap analysis. All results are written to `outputs/`.
+
+### 4. Launch the GUI
+```bash
+python python/gui.py
+```
+Shows Forecast Summary, Model Comparison, and lets you view the forecast plot. It only *reads* the files `run.py` generated — click "Generate Forecast" to reload the latest results after re-running the pipeline.
+
+## Real Results (already computed on this dataset)
+
+| Model | MAE | RMSE | MAPE |
+|---|---|---|---|
+| ARIMA(1,1,1) | 1413.07 | 2019.56 | 17.59% |
+| **Holt-Winters (period=7)** | **1376.51** | **1920.75** | **16.83%** |
+
+**Holt-Winters selected automatically** (lowest RMSE). Next-day forecast ≈ 10,351 units. Current inventory snapshot (2024-01-30) = 29,049 units → **only ~2.9 days of supply remaining** at forecasted demand, despite the raw inventory gap looking like a large surplus — see `docs/documentation.md` for why that distinction matters.
+
+## Limitations (see docs/documentation.md for full list)
+- Aggregate (all-store, all-product) daily forecasting, not per-SKU
+- Fixed rather than auto-tuned model parameters, for explainability
+- Dataset is unusually clean (likely synthetic) — preprocessing steps report 0 issues found, which is itself an honest, correct result
+- RapidMiner-side numbers must be generated by running the actual processes yourself

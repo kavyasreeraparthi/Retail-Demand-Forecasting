@@ -1,0 +1,9 @@
+{
+  "inventory_snapshot_date": "2024-01-30",
+  "current_inventory": 29049.0,
+  "next_day_forecast_demand": 10350.53,
+  "next_day_inventory_gap": -18698.47,
+  "next_day_recommendation": "Inventory appears sufficient, with a surplus of approximately 18698 units.",
+  "avg_forecast_daily_demand": 10040.82,
+  "days_of_supply_remaining": 2.9
+}

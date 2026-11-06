@@ -1,0 +1,7 @@
+pandas>=1.5
+numpy>=1.23
+matplotlib>=3.6
+statsmodels>=0.13
+# tkinter ships with standard Python on Windows/most installs -
+# on some Linux distros install it separately, e.g.:
+#   sudo apt install python3-tk
